@@ -1,65 +1,137 @@
 import java.util.Scanner;
 
-import javax.sound.sampled.Line;
-
 public class Ella {
-    private static final String INDENT = "    ";
-
-    private static final String LINE = "\n____________________________________________________________";
+    private static final String LINE = "____________________________________________________________";
     private static final int MAX_TASKS = 100;
 
     public static void main(String[] args) {
-        
+
         String logo =
-          "███████ ██      ██       █████  \n"
-        + "██      ██      ██      ██   ██ \n"
-        + "█████   ██      ██      ███████ \n"
-        + "██      ██      ██      ██   ██ \n"
-        + "███████ ███████ ███████ ██   ██ \n";
+                "███████ ██      ██       █████  \n"
+              + "██      ██      ██      ██   ██ \n"
+              + "█████   ██      ██      ███████ \n"
+              + "██      ██      ██      ██   ██ \n"
+              + "███████ ███████ ███████ ██   ██ \n";
         System.out.println(logo);
 
         Scanner sc = new Scanner(System.in);
 
-        String[] tasks = new String[MAX_TASKS];
-        
+        Task[] tasks = new Task[MAX_TASKS];
         int taskCount = 0;
 
-        System.out.println("Hello! I'm Ella\nWhat can I do for you?" + LINE);
+        printBox("Hello! I'm Ella\nWhat can I do for you?");
 
         while (true) {
-            String line = sc.nextLine().trim();
+            String input = sc.nextLine().trim();
 
-            if (line.equals("bye") || line.equals("Bye")) {
-                System.out.println(LINE + "\nBye. Hope to see you again soon!" + LINE);
+            if (input.equalsIgnoreCase("bye")) {
+                printBox("Bye. Hope to see you again soon!");
                 break;
             }
 
-            else if (line.equals("list") || line.equals("List")) {
+            if (input.equalsIgnoreCase("list")) {
                 if (taskCount == 0) {
-                    System.out.println("(no tasks yet)" + LINE);
+                    printBox("(no tasks yet)");
                 } else {
                     StringBuilder sb = new StringBuilder();
+                    sb.append("Here are the tasks in your list:\n");
                     for (int i = 0; i < taskCount; i++) {
-                        sb.append(i + 1).append(". ").append(tasks[i]).append("\n");
+                        sb.append(i + 1).append(".").append(tasks[i]).append("\n");
                     }
-                    // remove last newline so the box looks tidy
-                    System.out.println(sb.toString().trim() + LINE);
+                    printBox(sb.toString().trim());
                 }
-                
-            } else {
-                // treat anything else as a task to add
-                if (taskCount >= MAX_TASKS) {
-                    System.out.println("Sorry, I can only store up to " + MAX_TASKS + " tasks." + LINE);
-                    continue;
-                }
-                tasks[taskCount] = line;
-                taskCount++;
-
-                System.out.println("     added: " + line + LINE);
+                continue;
             }
 
-            //System.out.println(INDENT + line);
+            if (input.toLowerCase().startsWith("mark ")) {
+                Integer idx = parseIndex(input, "mark");
+                if (idx == null) {
+                    printBox("Please use: mark <task number>");
+                    continue;
+                }
+                if (idx < 1 || idx > taskCount) {
+                    printBox("Task number out of range.");
+                    continue;
+                }
+
+                Task t = tasks[idx - 1];
+                t.markDone();
+                printBox("Nice! I've marked this task as done:\n  " + t);
+                continue;
+            }
+
+            if (input.toLowerCase().startsWith("unmark ")) {
+                Integer idx = parseIndex(input, "unmark");
+                if (idx == null) {
+                    printBox("Please use: unmark <task number>");
+                    continue;
+                }
+                if (idx < 1 || idx > taskCount) {
+                    printBox("Task number out of range.");
+                    continue;
+                }
+
+                Task t = tasks[idx - 1];
+                t.markNotDone();
+                printBox("OK, I've marked this task as not done yet:\n  " + t);
+                continue;
+            }
+
+            // Otherwise: treat as "add task"
+            if (taskCount >= MAX_TASKS) {
+                printBox("Sorry, I can only store up to " + MAX_TASKS + " tasks.");
+                continue;
+            }
+
+            tasks[taskCount] = new Task(input);
+            taskCount++;
+            printBox("added: " + input);
         }
+
         sc.close();
+    }
+
+    private static void printBox(String message) {
+        System.out.println(LINE);
+        for (String line : message.split("\n")) {
+            System.out.println(" " + line);
+        }
+        System.out.println(LINE);
+    }
+
+    private static Integer parseIndex(String input, String commandWord) {
+        String rest = input.substring(commandWord.length()).trim(); // after "mark"/"unmark"
+        if (rest.isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(rest);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    // Extension A-Classes: use a class to represent a task
+    static class Task {
+        private final String description;
+        private boolean isDone;
+
+        Task(String description) {
+            this.description = description;
+            this.isDone = false;
+        }
+
+        void markDone() {
+            this.isDone = true;
+        }
+
+        void markNotDone() {
+            this.isDone = false;
+        }
+
+        @Override
+        public String toString() {
+            return "[" + (isDone ? "X" : " ") + "] " + description;
+        }
     }
 }
