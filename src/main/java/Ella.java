@@ -5,7 +5,6 @@ public class Ella {
     private static final int MAX_TASKS = 100;
 
     public static void main(String[] args) {
-
         String logo =
                 "███████ ██      ██       █████  \n"
               + "██      ██      ██      ██   ██ \n"
@@ -77,18 +76,91 @@ public class Ella {
                 continue;
             }
 
-            // Otherwise: treat as "add task"
-            if (taskCount >= MAX_TASKS) {
-                printBox("Sorry, I can only store up to " + MAX_TASKS + " tasks.");
+            // -------- Level 4 add commands --------
+
+            if (input.toLowerCase().startsWith("todo ")) {
+                String desc = input.substring(4).trim();
+                if (desc.isEmpty()) {
+                    printBox("The description of a todo cannot be empty.");
+                    continue;
+                }
+
+                Task newTask = new Todo(desc);
+                taskCount = addTask(tasks, taskCount, newTask);
+                if (taskCount != -1) {
+                    printAddMessage(newTask, taskCount);
+                }
                 continue;
             }
 
-            tasks[taskCount] = new Task(input);
-            taskCount++;
-            printBox("added: " + input);
+            if (input.toLowerCase().startsWith("deadline ")) {
+                String rest = input.substring("deadline".length()).trim();
+                String[] parts = rest.split(" /by ", 2);
+
+                if (parts.length < 2 || parts[0].trim().isEmpty() || parts[1].trim().isEmpty()) {
+                    printBox("Please use: deadline <description> /by <when>");
+                    continue;
+                }
+
+                Task newTask = new Deadline(parts[0].trim(), parts[1].trim());
+                taskCount = addTask(tasks, taskCount, newTask);
+                if (taskCount != -1) {
+                    printAddMessage(newTask, taskCount);
+                }
+                continue;
+            }
+
+            if (input.toLowerCase().startsWith("event ")) {
+                String rest = input.substring("event".length()).trim();
+
+                int fromIdx = rest.toLowerCase().indexOf(" /from ");
+                int toIdx = rest.toLowerCase().indexOf(" /to ");
+
+                if (fromIdx == -1 || toIdx == -1 || toIdx < fromIdx) {
+                    printBox("Please use: event <description> /from <start> /to <end>");
+                    continue;
+                }
+
+                String desc = rest.substring(0, fromIdx).trim();
+                String from = rest.substring(fromIdx + " /from ".length(), toIdx).trim();
+                String to = rest.substring(toIdx + " /to ".length()).trim();
+
+                if (desc.isEmpty() || from.isEmpty() || to.isEmpty()) {
+                    printBox("Please use: event <description> /from <start> /to <end>");
+                    continue;
+                }
+
+                Task newTask = new Event(desc, from, to);
+                taskCount = addTask(tasks, taskCount, newTask);
+                if (taskCount != -1) {
+                    printAddMessage(newTask, taskCount);
+                }
+                continue;
+            }
+
+            printBox("I don't understand. Try:\n"
+                    + "  todo <description>\n"
+                    + "  deadline <description> /by <when>\n"
+                    + "  event <description> /from <start> /to <end>\n"
+                    + "  list | mark N | unmark N | bye");
         }
 
         sc.close();
+    }
+
+    private static int addTask(Task[] tasks, int taskCount, Task newTask) {
+        if (taskCount >= MAX_TASKS) {
+            printBox("Sorry, I can only store up to " + MAX_TASKS + " tasks.");
+            return -1;
+        }
+        tasks[taskCount] = newTask;
+        return taskCount + 1;
+    }
+
+    private static void printAddMessage(Task task, int taskCount) {
+        printBox("Got it. I've added this task:\n"
+                + "  " + task + "\n"
+                + "Now you have " + taskCount + " tasks in the list.");
     }
 
     private static void printBox(String message) {
@@ -100,7 +172,7 @@ public class Ella {
     }
 
     private static Integer parseIndex(String input, String commandWord) {
-        String rest = input.substring(commandWord.length()).trim(); // after "mark"/"unmark"
+        String rest = input.substring(commandWord.length()).trim();
         if (rest.isEmpty()) {
             return null;
         }
@@ -108,30 +180,6 @@ public class Ella {
             return Integer.parseInt(rest);
         } catch (NumberFormatException e) {
             return null;
-        }
-    }
-
-    // Extension A-Classes: use a class to represent a task
-    static class Task {
-        private final String description;
-        private boolean isDone;
-
-        Task(String description) {
-            this.description = description;
-            this.isDone = false;
-        }
-
-        void markDone() {
-            this.isDone = true;
-        }
-
-        void markNotDone() {
-            this.isDone = false;
-        }
-
-        @Override
-        public String toString() {
-            return "[" + (isDone ? "X" : " ") + "] " + description;
         }
     }
 }
