@@ -1,21 +1,21 @@
+import java.util.ArrayList;
+
 public class TaskList {
-    private static final int MAX_TASKS = 100;
-    private final Task[] tasks = new Task[MAX_TASKS];
-    private int size = 0;
+    private final ArrayList<Task> tasks = new ArrayList<>();
 
     public int size() {
-        return size;
+        return tasks.size();
     }
 
     public Task get(int index) { // 0-based
-        return tasks[index];
+        return tasks.get(index);
     }
 
-    public void add(Task task) throws EllaException {
-        if (size >= MAX_TASKS) {
-            throw new EllaException("I can only store up to " + MAX_TASKS + " tasks.");
-        }
-        tasks[size] = task;
-        size++;
+    public void add(Task task) {
+        tasks.add(task);
+    }
+
+    public Task remove(int index) { // 0-based
+        return tasks.remove(index);
     }
 }

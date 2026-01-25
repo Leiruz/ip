@@ -61,6 +61,14 @@ public class Ella {
             return sb.toString().trim();
         }
 
+        if (input.toLowerCase().startsWith("delete")) {
+            int idx = parseTaskNumber(input, "delete");
+            Task removed = removeTaskAt(taskList, idx);
+            return "Noted. I've removed this task:\n"
+                    + "  " + removed + "\n"
+                    + "Now you have " + taskList.size() + " tasks in the list.";
+        }
+
         if (input.toLowerCase().startsWith("mark")) {
             int idx = parseTaskNumber(input, "mark");
             Task t = taskAt(taskList, idx);
@@ -162,6 +170,17 @@ public class Ella {
         }
         return list.get(oneBasedIndex - 1);
     }
+
+    private static Task removeTaskAt(TaskList list, int oneBasedIndex) throws EllaException {
+        if (list.size() == 0) {
+            throw new EllaException("There are no tasks to delete yet.");
+        }
+        if (oneBasedIndex < 1 || oneBasedIndex > list.size()) {
+            throw new EllaException("Task number out of range. Use a number between 1 and " + list.size() + ".");
+        }
+        return list.remove(oneBasedIndex - 1);
+    }
+
 
 
     private static void printBox(String message) {
