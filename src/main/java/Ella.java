@@ -145,8 +145,7 @@ public class Ella {
                     + "Now you have " + taskList.size() + " tasks in the list.";
         }
 
-        // Required example: unknown command
-        throw new EllaException("I don't know what that means. Try: todo, deadline, event, list, mark, unmark, bye.");
+        throw new EllaException("I don't know what that means. \n\nTry: todo, deadline, event, list, mark, unmark, bye.");
     }
 
     private static int parseTaskNumber(String input, String command) throws EllaException {

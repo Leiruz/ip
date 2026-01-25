@@ -1,17 +1,11 @@
 public class Task {
     protected final String description;
     protected boolean isDone;
+    protected final TaskType type;
 
-    public Task(String description) {
+    public Task(String description, TaskType type) {
         this.description = description;
-        this.isDone = false;
-    }
-
-    public void markDone() {
-        this.isDone = true;
-    }
-
-    public void markNotDone() {
+        this.type = type;
         this.isDone = false;
     }
 
@@ -21,6 +15,9 @@ public class Task {
 
     @Override
     public String toString() {
-        return statusIcon() + " " + description;
+        return type.tag() + statusIcon() + " " + description;
     }
+
+    public void markDone() { isDone = true; }
+    public void markNotDone() { isDone = false; }
 }
