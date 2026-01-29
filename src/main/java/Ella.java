@@ -15,6 +15,21 @@ public class Ella {
         Scanner sc = new Scanner(System.in);
         TaskList taskList = new TaskList();
 
+        Storage storage = new Storage();
+
+        // Load saved tasks
+        try {
+            for (String line : storage.loadLines()) {
+                if (line.trim().isEmpty()) {
+                    continue;
+                }
+                Task t = Task.fromStorageString(line);
+                taskList.add(t);
+            }
+        } catch (Exception e) {
+            printBox("Warning: Could not load saved tasks. Starting fresh.");
+        }
+
         printBox("Hello! I'm Ella\nWhat can I do for you?");
 
         while (true) {
@@ -24,7 +39,7 @@ public class Ella {
             String input = sc.nextLine().trim();
 
             try {
-                String response = handleInput(input, taskList);
+                String response = handleInput(input, taskList, storage);
                 if (response != null && !response.isEmpty()) {
                     printBox(response);
                 }
@@ -40,7 +55,7 @@ public class Ella {
         sc.close();
     }
 
-    private static String handleInput(String input, TaskList taskList) throws EllaException {
+    private static String handleInput(String input, TaskList taskList, Storage storage) throws EllaException{
         if (input.isEmpty()) {
             throw new EllaException("Please type a command.");
         }
@@ -64,6 +79,7 @@ public class Ella {
         if (input.toLowerCase().startsWith("delete")) {
             int idx = parseTaskNumber(input, "delete");
             Task removed = removeTaskAt(taskList, idx);
+            save(storage, taskList);
             return "Noted. I've removed this task:\n"
                     + "  " + removed + "\n"
                     + "Now you have " + taskList.size() + " tasks in the list.";
@@ -73,6 +89,7 @@ public class Ella {
             int idx = parseTaskNumber(input, "mark");
             Task t = taskAt(taskList, idx);
             t.markDone();
+            save(storage, taskList);
             return "Nice! I've marked this task as done:\n  " + t;
         }
 
@@ -80,6 +97,7 @@ public class Ella {
             int idx = parseTaskNumber(input, "unmark");
             Task t = taskAt(taskList, idx);
             t.markNotDone();
+            save(storage, taskList);
             return "OK, I've marked this task as not done yet:\n  " + t;
         }
 
@@ -91,6 +109,7 @@ public class Ella {
             }
             Task t = new Todo(desc);
             taskList.add(t);
+            save(storage, taskList); 
             return "Got it. I've added this task:\n"
                     + "  " + t + "\n"
                     + "Now you have " + taskList.size() + " tasks in the list.";
@@ -112,6 +131,7 @@ public class Ella {
             }
             Task t = new Deadline(desc, by);
             taskList.add(t);
+            save(storage, taskList); 
             return "Got it. I've added this task:\n"
                     + "  " + t + "\n"
                     + "Now you have " + taskList.size() + " tasks in the list.";
@@ -140,6 +160,7 @@ public class Ella {
 
             Task t = new Event(desc, from, to);
             taskList.add(t);
+            save(storage, taskList); 
             return "Got it. I've added this task:\n"
                     + "  " + t + "\n"
                     + "Now you have " + taskList.size() + " tasks in the list.";
@@ -178,6 +199,14 @@ public class Ella {
             throw new EllaException("Task number out of range. Use a number between 1 and " + list.size() + ".");
         }
         return list.remove(oneBasedIndex - 1);
+    }
+
+    private static void save(Storage storage, TaskList taskList) throws EllaException {
+        try {
+            storage.saveLines(taskList.toStorageLines());
+        } catch (Exception e) {
+            throw new EllaException("I couldn't save your tasks to disk.");
+        }
     }
 
 

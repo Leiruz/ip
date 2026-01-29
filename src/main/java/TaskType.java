@@ -12,4 +12,8 @@ public enum TaskType {
     public String tag() {
         return "[" + shortCode + "]";
     }
+
+    public String shortCode() {
+        return shortCode;
+    }
 }

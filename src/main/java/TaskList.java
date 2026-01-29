@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 
 public class TaskList {
     private final ArrayList<Task> tasks = new ArrayList<>();
@@ -17,5 +18,13 @@ public class TaskList {
 
     public Task remove(int index) { // 0-based
         return tasks.remove(index);
+    }
+
+    public List<String> toStorageLines() {
+        ArrayList<String> lines = new ArrayList<>();
+        for (Task t : tasks) {
+            lines.add(t.toStorageString());
+        }
+        return lines;
     }
 }
