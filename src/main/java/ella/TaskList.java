@@ -1,4 +1,5 @@
 package ella;
+<<<<<<< HEAD
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +15,19 @@ public class TaskList {
      *
      * @return Task count.
      */
+=======
+import java.util.ArrayList;
+import java.util.List;
+
+public class TaskList {
+    private final ArrayList<Task> tasks = new ArrayList<>();
+
+>>>>>>> branch-Level-9
     public int size() {
         return tasks.size();
     }
 
+<<<<<<< HEAD
     /**
      * Returns a task by zero-based index.
      *
@@ -33,10 +43,17 @@ public class TaskList {
      *
      * @param task Task to add.
      */
+=======
+    public Task get(int index) { // 0-based
+        return tasks.get(index);
+    }
+
+>>>>>>> branch-Level-9
     public void add(Task task) {
         tasks.add(task);
     }
 
+<<<<<<< HEAD
     /**
      * Removes and returns a task at the given zero-based index.
      *
@@ -52,6 +69,12 @@ public class TaskList {
      *
      * @return List of storage lines.
      */
+=======
+    public Task remove(int index) { // 0-based
+        return tasks.remove(index);
+    }
+
+>>>>>>> branch-Level-9
     public List<String> toStorageLines() {
         ArrayList<String> lines = new ArrayList<>();
         for (Task t : tasks) {
