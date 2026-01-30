@@ -18,11 +18,12 @@ public class Task {
         return type.tag() + statusIcon() + " " + description;
     }
 
-    public void markDone() { 
-        isDone = true; 
+    public void markDone() {
+        isDone = true;
     }
-    public void markNotDone() { 
-        isDone = false; 
+
+    public void markNotDone() {
+        isDone = false;
     }
 
     public String toStorageString() {
@@ -68,5 +69,4 @@ public class Task {
 
         return task;
     }
-
 }

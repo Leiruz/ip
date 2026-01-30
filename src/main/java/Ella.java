@@ -14,7 +14,6 @@ public class Ella {
 
         Scanner sc = new Scanner(System.in);
         TaskList taskList = new TaskList();
-
         Storage storage = new Storage();
 
         // Load saved tasks
@@ -47,7 +46,6 @@ public class Ella {
                     break;
                 }
             } catch (EllaException e) {
-                // your own wording is encouraged
                 printBox("Oops! " + e.getMessage());
             }
         }
@@ -55,7 +53,7 @@ public class Ella {
         sc.close();
     }
 
-    private static String handleInput(String input, TaskList taskList, Storage storage) throws EllaException{
+    private static String handleInput(String input, TaskList taskList, Storage storage) throws EllaException {
         if (input.isEmpty()) {
             throw new EllaException("Please type a command.");
         }
@@ -104,12 +102,11 @@ public class Ella {
         if (input.toLowerCase().startsWith("todo")) {
             String desc = input.substring(4).trim();
             if (desc.isEmpty()) {
-                // Required example: todo with empty description
                 throw new EllaException("The description of a todo cannot be empty.");
             }
             Task t = new Todo(desc);
             taskList.add(t);
-            save(storage, taskList); 
+            save(storage, taskList);
             return "Got it. I've added this task:\n"
                     + "  " + t + "\n"
                     + "Now you have " + taskList.size() + " tasks in the list.";
@@ -119,7 +116,7 @@ public class Ella {
             String rest = input.substring("deadline".length()).trim();
             String[] parts = rest.split(" /by ", 2);
             if (parts.length < 2) {
-                throw new EllaException("Deadline needs a /by. Use: deadline <desc> /by <when>");
+                throw new EllaException("Use: deadline <desc> /by yyyy-mm-dd (e.g., 2019-10-15)");
             }
             String desc = parts[0].trim();
             String by = parts[1].trim();
@@ -129,9 +126,10 @@ public class Ella {
             if (by.isEmpty()) {
                 throw new EllaException("The /by part of a deadline cannot be empty.");
             }
-            Task t = new Deadline(desc, by);
+
+            Task t = new Deadline(desc, by); // Level-8 parsing happens inside Deadline
             taskList.add(t);
-            save(storage, taskList); 
+            save(storage, taskList);
             return "Got it. I've added this task:\n"
                     + "  " + t + "\n"
                     + "Now you have " + taskList.size() + " tasks in the list.";
@@ -160,7 +158,7 @@ public class Ella {
 
             Task t = new Event(desc, from, to);
             taskList.add(t);
-            save(storage, taskList); 
+            save(storage, taskList);
             return "Got it. I've added this task:\n"
                     + "  " + t + "\n"
                     + "Now you have " + taskList.size() + " tasks in the list.";
@@ -208,8 +206,6 @@ public class Ella {
             throw new EllaException("I couldn't save your tasks to disk.");
         }
     }
-
-
 
     private static void printBox(String message) {
         System.out.println(LINE);
