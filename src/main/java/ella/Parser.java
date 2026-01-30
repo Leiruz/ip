@@ -1,6 +1,5 @@
 package ella;
 
-<<<<<<< HEAD
 /**
  * Parses user input and executes the corresponding operations on the task list.
  * Returns user-facing messages that should be shown by the UI.
@@ -16,10 +15,6 @@ public class Parser {
      * @return A message to be displayed to the user.
      * @throws EllaException If the command is invalid or cannot be processed.
      */
-=======
-public class Parser {
-
->>>>>>> branch-Level-9
     public static String handle(String input, TaskList taskList, Storage storage) throws EllaException {
         if (input == null || input.trim().isEmpty()) {
             throw new EllaException("Please type a command.");
@@ -140,15 +135,12 @@ public class Parser {
         throw new EllaException("I don't know what that means.\n\nTry: todo, deadline, event, list, find, mark, unmark, bye.");
     }
 
-<<<<<<< HEAD
     /**
      * Builds the listing string for all tasks.
      *
      * @param taskList The task list to display.
      * @return Formatted list output.
      */
-=======
->>>>>>> branch-Level-9
     private static String listTasks(TaskList taskList) {
         if (taskList.size() == 0) {
             return "(no tasks yet)";
@@ -161,7 +153,6 @@ public class Parser {
         return sb.toString().trim();
     }
 
-<<<<<<< HEAD
     /**
      * Finds tasks whose displayed text contains the given keyword (case-insensitive).
      *
@@ -169,8 +160,6 @@ public class Parser {
      * @param keyword The keyword to search for.
      * @return Formatted search results.
      */
-=======
->>>>>>> branch-Level-9
     private static String findTasks(TaskList taskList, String keyword) {
         String keyLower = keyword.toLowerCase();
 
@@ -193,7 +182,6 @@ public class Parser {
         return sb.toString().trim();
     }
 
-<<<<<<< HEAD
     /**
      * Parses a one-based task number from a command like "mark 2".
      *
@@ -202,8 +190,6 @@ public class Parser {
      * @return One-based index the user provided.
      * @throws EllaException If the number is missing or invalid.
      */
-=======
->>>>>>> branch-Level-9
     private static int parseTaskNumber(String input, String command) throws EllaException {
         String rest = input.substring(command.length()).trim();
         if (rest.isEmpty()) {
@@ -216,7 +202,6 @@ public class Parser {
         }
     }
 
-<<<<<<< HEAD
     /**
      * Gets a task by one-based index with range checking.
      *
@@ -225,8 +210,6 @@ public class Parser {
      * @return The task at that index.
      * @throws EllaException If out of range or list empty.
      */
-=======
->>>>>>> branch-Level-9
     private static Task taskAt(TaskList list, int oneBasedIndex) throws EllaException {
         if (list.size() == 0) {
             throw new EllaException("There are no tasks yet. Add one first (e.g., todo <description>).");
@@ -237,7 +220,6 @@ public class Parser {
         return list.get(oneBasedIndex - 1);
     }
 
-<<<<<<< HEAD
     /**
      * Removes a task by one-based index with range checking.
      *
@@ -246,8 +228,6 @@ public class Parser {
      * @return The removed task.
      * @throws EllaException If out of range or list empty.
      */
-=======
->>>>>>> branch-Level-9
     private static Task removeTaskAt(TaskList list, int oneBasedIndex) throws EllaException {
         if (list.size() == 0) {
             throw new EllaException("There are no tasks to delete yet.");
@@ -258,7 +238,6 @@ public class Parser {
         return list.remove(oneBasedIndex - 1);
     }
 
-<<<<<<< HEAD
     /**
      * Persists the current task list to disk.
      *
@@ -266,8 +245,6 @@ public class Parser {
      * @param taskList Task list to save.
      * @throws EllaException If saving fails.
      */
-=======
->>>>>>> branch-Level-9
     private static void save(Storage storage, TaskList taskList) throws EllaException {
         try {
             storage.saveLines(taskList.toStorageLines());
