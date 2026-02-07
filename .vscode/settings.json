@@ -6,7 +6,8 @@
       "path": "C:\\Program Files\\Zulu\\zulu-17",
       "default": true
     }
-  ]
+  ],
+  "java.configuration.updateBuildConfiguration": "interactive"
 }
 
 
