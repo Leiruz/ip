@@ -66,4 +66,13 @@ public class Ella {
     public static void main(String[] args) {
         new Ella("data/duke.txt").run();
     }
+
+    public Storage getStorage() {
+        return storage;
+    }
+
+    public TaskList getTasks() {
+        return tasks;
+    }
+
 }
