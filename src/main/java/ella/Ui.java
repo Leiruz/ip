@@ -20,7 +20,7 @@ public class Ui {
               + "E       L      L       A   A  \n"
               + "EEEEEE  LLLLL  LLLLL   A   A  \n";
         System.out.println(logo);
-        showBox("Hello! I'm Ella\nWhat can I do for you?");
+        showBox("Hello! I'm Ella", "What can I do for you?");
     }
 
     /**
@@ -40,13 +40,16 @@ public class Ui {
      *
      * @param message The message to display.
      */
-    public void showBox(String message) {
+    public void showBox(String... messages) {
         System.out.println(LINE);
-        for (String line : message.split("\n")) {
-            System.out.println(" " + line);
+        for (String message : messages) {
+            for (String line : message.split("\n")) {
+                System.out.println(" " + line);
+            }
         }
         System.out.println(LINE);
     }
+
 
     /**
      * Shows a warning message when loading saved data fails.
