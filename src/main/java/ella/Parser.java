@@ -10,7 +10,7 @@ public class Parser {
 
     private static final String MESSAGE_EMPTY_COMMAND = "Please type a command.";
     private static final String MESSAGE_UNKNOWN_COMMAND =
-            "I don't know what that means.\n\nTry: todo, deadline, event, list, find, mark, unmark, bye.";
+            "I don't know what that means.\n\nTry: todo, deadline, event, list, find, mark, unmark, sort, bye.";
 
     private static final String MESSAGE_NO_TASKS_YET =
             "There are no tasks yet. Add one first (e.g., todo <description>).";
@@ -61,6 +61,8 @@ public class Parser {
             return handleDeadline(taskList, storage, parsed.args);
         case "event":
             return handleEvent(taskList, storage, parsed.args);
+        case "sort":
+            return handleSort(taskList, storage, parsed.args);
         default:
             throw new EllaException(MESSAGE_UNKNOWN_COMMAND);
         }
@@ -76,6 +78,24 @@ public class Parser {
         String command = parts[0].toLowerCase();
         String args = (parts.length == 2) ? parts[1].trim() : "";
         return new ParsedInput(command, args);
+    }
+
+    private static String handleSort(TaskList taskList, Storage storage, String args) throws EllaException {
+        assert taskList != null : "taskList must not be null";
+        assert storage != null : "storage must not be null";
+        assert args != null : "args must not be null";
+
+        if (!args.isEmpty()) {
+            throw new EllaException("Use: sort");
+        }
+        if (taskList.size() == 0) {
+            return MESSAGE_LIST_EMPTY;
+        }
+
+        taskList.sortDefault();
+        save(storage, taskList);
+
+        return "Sorted your tasks.\n" + listTasks(taskList);
     }
 
     private static String handleFind(TaskList taskList, String args) throws EllaException {
@@ -211,16 +231,11 @@ public class Parser {
 
     /**
      * Finds tasks whose displayed text contains the given keyword (case-insensitive).
-     *
-     * @param taskList The task list to search.
-     * @param keyword The keyword to search for.
-     * @return Formatted search results.
      */
     private static String findTasks(TaskList taskList, String keyword) {
         assert taskList != null : "taskList must not be null";
         assert keyword != null : "keyword must not be null";
 
-        // A-Streams is implemented inside TaskList.findMatching(...)
         List<Task> matches = taskList.findMatching(keyword);
 
         if (matches.isEmpty()) {
