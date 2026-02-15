@@ -59,6 +59,24 @@ public class Ella {
     }
 
     /**
+     * Returns the list of tasks.
+     *
+     * @return TaskList object containing the tasks.
+     */
+    public TaskList getTasks() {
+        return tasks;
+    }
+
+    /**
+     * Returns the storage object.
+     *
+     * @return Storage object used for loading and saving tasks.
+     */
+    public Storage getStorage() {
+        return storage;
+    }
+
+    /**
      * Launches the application.
      *
      * @param args Command line arguments (unused).
@@ -66,13 +84,4 @@ public class Ella {
     public static void main(String[] args) {
         new Ella("data/duke.txt").run();
     }
-
-    public Storage getStorage() {
-        return storage;
-    }
-
-    public TaskList getTasks() {
-        return tasks;
-    }
-
 }

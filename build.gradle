@@ -47,7 +47,7 @@ test {
 }
 
 application {
-    mainClass = "ella.Launcher"
+    mainClass.set("ella.Launcher")
 }
 
 shadowJar {
@@ -56,5 +56,19 @@ shadowJar {
 }
 
 run{
+    jvmArgs = ['-ea']
     standardInput = System.in
 }
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'ella.Launcher'
+        )
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
