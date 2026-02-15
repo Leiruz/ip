@@ -1,6 +1,7 @@
 package ella;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,10 +63,39 @@ public class TaskList {
 
         String keyLower = keyword.toLowerCase();
 
-        // A-Streams: stream-based filtering
         return tasks.stream()
                 .filter(t -> t.toString().toLowerCase().contains(keyLower))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Sorts tasks in a default sensible order:
+     * 1) Not done first
+     * 2) By type: Todo, Deadline, Event
+     * 3) By description (case-insensitive)
+     */
+    public void sortDefault() {
+        Comparator<Task> comparator =
+                Comparator.comparing(Task::isDone) // false first (not done), true later (done)
+                        .thenComparing(t -> typeRank(t.getType()))
+                        .thenComparing(t -> t.getDescription().toLowerCase());
+
+        tasks.sort(comparator);
+    }
+
+    private int typeRank(TaskType type) {
+        assert type != null : "type must not be null";
+        // Adjust if your TaskType names differ
+        if (type == TaskType.TODO) {
+            return 0;
+        }
+        if (type == TaskType.DEADLINE) {
+            return 1;
+        }
+        if (type == TaskType.EVENT) {
+            return 2;
+        }
+        return 99;
     }
 
     /**
@@ -74,7 +104,6 @@ public class TaskList {
      * @return List of storage lines.
      */
     public List<String> toStorageLines() {
-        // A-Streams: stream-based mapping
         return tasks.stream()
                 .peek(t -> {
                     assert t != null : "TaskList should not contain null tasks";

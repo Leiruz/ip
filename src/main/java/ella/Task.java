@@ -60,6 +60,35 @@ public class Task {
     }
 
     /**
+     * Returns whether the task is done.
+     *
+     * @return true if done, false otherwise.
+     */
+    public boolean isDone() {
+        return isDone;
+    }
+
+    /**
+     * Returns the task type.
+     *
+     * @return Task type.
+     */
+    public TaskType getType() {
+        assert type != null : "type must not be null";
+        return type;
+    }
+
+    /**
+     * Returns the task description.
+     *
+     * @return Description string.
+     */
+    public String getDescription() {
+        assert description != null : "description must not be null";
+        return description;
+    }
+
+    /**
      * Converts this task into a storage-friendly string.
      *
      * @return Storage string representation.
