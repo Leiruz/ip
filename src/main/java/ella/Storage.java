@@ -26,6 +26,9 @@ public class Storage {
      * @param filePath Relative file path (recommended).
      */
     public Storage(String filePath) {
+        assert filePath != null : "filePath must not be null";
+        assert !filePath.trim().isEmpty() : "filePath must not be blank";
+
         this.path = Paths.get(filePath);
     }
 
@@ -37,6 +40,8 @@ public class Storage {
      * @throws IOException If reading fails.
      */
     public List<String> loadLines() throws IOException {
+        assert path != null : "path must not be null";
+
         ensureParentFolderExists();
         if (!Files.exists(path)) {
             return new ArrayList<>();
@@ -51,6 +56,9 @@ public class Storage {
      * @throws IOException If writing fails.
      */
     public void saveLines(List<String> lines) throws IOException {
+        assert lines != null : "lines must not be null";
+        assert path != null : "path must not be null";
+
         ensureParentFolderExists();
         Files.write(path, lines);
     }

@@ -16,6 +16,9 @@ public class Parser {
      * @throws EllaException If the command is invalid or cannot be processed.
      */
     public static String handle(String input, TaskList taskList, Storage storage) throws EllaException {
+        assert taskList != null : "taskList must not be null";
+        assert storage != null : "storage must not be null";
+
         if (input == null || input.trim().isEmpty()) {
             throw new EllaException("Please type a command.");
         }
@@ -142,6 +145,8 @@ public class Parser {
      * @return Formatted list output.
      */
     private static String listTasks(TaskList taskList) {
+        assert taskList != null : "taskList must not be null";
+
         if (taskList.size() == 0) {
             return "(no tasks yet)";
         }
@@ -161,6 +166,9 @@ public class Parser {
      * @return Formatted search results.
      */
     private static String findTasks(TaskList taskList, String keyword) {
+        assert taskList != null : "taskList must not be null";
+        assert keyword != null : "keyword must not be null";
+
         String keyLower = keyword.toLowerCase();
 
         StringBuilder sb = new StringBuilder();
@@ -191,6 +199,9 @@ public class Parser {
      * @throws EllaException If the number is missing or invalid.
      */
     private static int parseTaskNumber(String input, String command) throws EllaException {
+        assert input != null : "input must not be null";
+        assert command != null && !command.isBlank() : "command must not be blank";
+
         String rest = input.substring(command.length()).trim();
         if (rest.isEmpty()) {
             throw new EllaException("Please provide a task number. Use: " + command + " <number>");
@@ -211,13 +222,18 @@ public class Parser {
      * @throws EllaException If out of range or list empty.
      */
     private static Task taskAt(TaskList list, int oneBasedIndex) throws EllaException {
+        assert list != null : "TaskList must not be null";
+
         if (list.size() == 0) {
             throw new EllaException("There are no tasks yet. Add one first (e.g., todo <description>).");
         }
         if (oneBasedIndex < 1 || oneBasedIndex > list.size()) {
             throw new EllaException("Task number out of range. Use a number between 1 and " + list.size() + ".");
         }
-        return list.get(oneBasedIndex - 1);
+
+        int zeroBasedIndex = oneBasedIndex - 1;
+        assert zeroBasedIndex >= 0 && zeroBasedIndex < list.size() : "index conversion should be within bounds";
+        return list.get(zeroBasedIndex);
     }
 
     /**
@@ -229,13 +245,18 @@ public class Parser {
      * @throws EllaException If out of range or list empty.
      */
     private static Task removeTaskAt(TaskList list, int oneBasedIndex) throws EllaException {
+        assert list != null : "TaskList must not be null";
+
         if (list.size() == 0) {
             throw new EllaException("There are no tasks to delete yet.");
         }
         if (oneBasedIndex < 1 || oneBasedIndex > list.size()) {
             throw new EllaException("Task number out of range. Use a number between 1 and " + list.size() + ".");
         }
-        return list.remove(oneBasedIndex - 1);
+
+        int zeroBasedIndex = oneBasedIndex - 1;
+        assert zeroBasedIndex >= 0 && zeroBasedIndex < list.size() : "index conversion should be within bounds";
+        return list.remove(zeroBasedIndex);
     }
 
     /**
@@ -246,6 +267,9 @@ public class Parser {
      * @throws EllaException If saving fails.
      */
     private static void save(Storage storage, TaskList taskList) throws EllaException {
+        assert storage != null : "storage must not be null";
+        assert taskList != null : "taskList must not be null";
+
         try {
             storage.saveLines(taskList.toStorageLines());
         } catch (Exception e) {

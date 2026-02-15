@@ -15,6 +15,10 @@ public class Task {
      * @param type Task type.
      */
     public Task(String description, TaskType type) {
+        assert description != null : "description must not be null";
+        assert !description.trim().isEmpty() : "description must not be blank";
+        assert type != null : "type must not be null";
+
         this.description = description;
         this.type = type;
         this.isDone = false;
@@ -36,6 +40,8 @@ public class Task {
      */
     @Override
     public String toString() {
+        assert type != null : "type must not be null";
+        assert description != null : "description must not be null";
         return type.tag() + statusIcon() + " " + description;
     }
 
@@ -59,6 +65,8 @@ public class Task {
      * @return Storage string representation.
      */
     public String toStorageString() {
+        assert type != null : "type must not be null";
+        assert description != null : "description must not be null";
         return type.shortCode() + " | " + (isDone ? "1" : "0") + " | " + description;
     }
 
@@ -70,6 +78,8 @@ public class Task {
      * @throws EllaException If the line is corrupted or cannot be parsed.
      */
     public static Task fromStorageString(String line) throws EllaException {
+        assert line != null : "line must not be null";
+
         String[] parts = line.split(" \\| ");
         if (parts.length < 3) {
             throw new EllaException("Corrupted save file line: " + line);
