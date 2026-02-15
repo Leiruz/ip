@@ -1,5 +1,7 @@
 package ella;
 
+import java.util.List;
+
 /**
  * Parses user input and executes the corresponding operations on the task list.
  * Returns user-facing messages that should be shown by the UI.
@@ -218,22 +220,18 @@ public class Parser {
         assert taskList != null : "taskList must not be null";
         assert keyword != null : "keyword must not be null";
 
-        String keyLower = keyword.toLowerCase();
+        // A-Streams is implemented inside TaskList.findMatching(...)
+        List<Task> matches = taskList.findMatching(keyword);
+
+        if (matches.isEmpty()) {
+            return MESSAGE_NO_MATCHES;
+        }
 
         StringBuilder sb = new StringBuilder();
         sb.append("Here are the matching tasks in your list:\n");
 
-        int matchCount = 0;
-        for (int i = 0; i < taskList.size(); i++) {
-            Task t = taskList.get(i);
-            if (t.toString().toLowerCase().contains(keyLower)) {
-                matchCount++;
-                sb.append(matchCount).append(".").append(t).append("\n");
-            }
-        }
-
-        if (matchCount == 0) {
-            return MESSAGE_NO_MATCHES;
+        for (int i = 0; i < matches.size(); i++) {
+            sb.append(i + 1).append(".").append(matches.get(i)).append("\n");
         }
         return sb.toString().trim();
     }

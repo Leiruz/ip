@@ -2,6 +2,7 @@ package ella;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Stores and manages a list of tasks.
@@ -51,16 +52,34 @@ public class TaskList {
     }
 
     /**
+     * Finds tasks that contain the keyword (case-insensitive) in their display string.
+     *
+     * @param keyword Keyword to match.
+     * @return List of matching tasks (may be empty).
+     */
+    public List<Task> findMatching(String keyword) {
+        assert keyword != null : "keyword must not be null";
+
+        String keyLower = keyword.toLowerCase();
+
+        // A-Streams: stream-based filtering
+        return tasks.stream()
+                .filter(t -> t.toString().toLowerCase().contains(keyLower))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Converts all tasks into storage lines for persistence.
      *
      * @return List of storage lines.
      */
     public List<String> toStorageLines() {
-        ArrayList<String> lines = new ArrayList<>();
-        for (Task t : tasks) {
-            assert t != null : "TaskList should not contain null tasks";
-            lines.add(t.toStorageString());
-        }
-        return lines;
+        // A-Streams: stream-based mapping
+        return tasks.stream()
+                .peek(t -> {
+                    assert t != null : "TaskList should not contain null tasks";
+                })
+                .map(Task::toStorageString)
+                .collect(Collectors.toList());
     }
 }
