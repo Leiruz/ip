@@ -25,6 +25,7 @@ public class TaskList {
      * @return Task at index.
      */
     public Task get(int index) {
+        assert index >= 0 && index < tasks.size() : "index must be within [0, size)";
         return tasks.get(index);
     }
 
@@ -34,6 +35,7 @@ public class TaskList {
      * @param task Task to add.
      */
     public void add(Task task) {
+        assert task != null : "task must not be null";
         tasks.add(task);
     }
 
@@ -44,6 +46,7 @@ public class TaskList {
      * @return Removed task.
      */
     public Task remove(int index) {
+        assert index >= 0 && index < tasks.size() : "index must be within [0, size)";
         return tasks.remove(index);
     }
 
@@ -55,6 +58,7 @@ public class TaskList {
     public List<String> toStorageLines() {
         ArrayList<String> lines = new ArrayList<>();
         for (Task t : tasks) {
+            assert t != null : "TaskList should not contain null tasks";
             lines.add(t.toStorageString());
         }
         return lines;
