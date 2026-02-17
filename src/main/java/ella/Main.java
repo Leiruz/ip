@@ -18,7 +18,10 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
     private static final String APP_TITLE = "Ella";
-    private static final String WELCOME_MESSAGE = "Hello! I'm Ella\nWhat can I do for you?";
+    private static final String WELCOME_MESSAGE =
+        "✨ Hey! I'm Ella.\n"
+      + "I can help you keep your tasks under control.\n"
+      + "Tell me what you need — I'm listening 👂";
 
     private Ella ella;
 

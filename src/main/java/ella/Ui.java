@@ -7,6 +7,7 @@ import java.util.Scanner;
  */
 public class Ui {
     private static final String LINE = "____________________________________________________________";
+    private static final String BOT_NAME = "Ella";
     private final Scanner scanner = new Scanner(System.in);
 
     /**
@@ -19,8 +20,11 @@ public class Ui {
               + "EEEEE   L      L       AAAAA  \n"
               + "E       L      L       A   A  \n"
               + "EEEEEE  LLLLL  LLLLL   A   A  \n";
+
         System.out.println(logo);
-        showBox("Hello! I'm Ella\nWhat can I do for you?");
+        showBox("✨ Hey! I'm " + BOT_NAME + ".\n"
+                + "I can help you keep your tasks under control.\n"
+                + "Tell me what you need — I'm listening 👂");
     }
 
     /**
@@ -42,7 +46,7 @@ public class Ui {
      */
     public void showBox(String message) {
         System.out.println(LINE);
-        for (String line : message.split("\n")) {
+        for (String line : message.split("\\n")) {
             System.out.println(" " + line);
         }
         System.out.println(LINE);
@@ -52,7 +56,8 @@ public class Ui {
      * Shows a warning message when loading saved data fails.
      */
     public void showLoadingError() {
-        showBox("Warning: Could not load saved tasks. Starting fresh.");
+        showBox("⚠️ I tried to load your saved tasks, but something went wonky.\n"
+                + "No worries — we'll start fresh.");
     }
 
     /**
@@ -61,6 +66,7 @@ public class Ui {
      * @param message The error message.
      */
     public void showError(String message) {
-        showBox("Oops! " + message);
+        showBox("😅 Oops! " + message + "\n"
+                + "Tip: If you're stuck, try `list` to see what I know so far.");
     }
 }
