@@ -18,17 +18,14 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
     private static final String APP_TITLE = "Ella";
-    private static final String WELCOME_MESSAGE =
-        "✨ Hey! I'm Ella.\n"
-      + "I can help you keep your tasks under control.\n"
-      + "Tell me what you need — I'm listening 👂";
+    private static final String WELCOME_MESSAGE = "Hello! I'm Ella\nWhat can I do for you?";
 
     private Ella ella;
 
     @Override
     public void start(Stage stage) {
         // Initialize app core (loads tasks from storage)
-        ella = new Ella("data/duke.txt");
+        ella = new Ella(Storage.DEFAULT_SAVE_PATH);
 
         VBox dialogContainer = new VBox(10);
         dialogContainer.setPadding(new Insets(10));
@@ -55,6 +52,12 @@ public class Main extends Application {
         root.setPadding(new Insets(10));
 
         addDialog(dialogContainer, "Ella", WELCOME_MESSAGE, false);
+
+        // Show startup warning in GUI if needed
+        String warning = ella.getStartupWarning();
+        if (warning != null && !warning.isBlank()) {
+            addDialog(dialogContainer, "Ella", warning, false);
+        }
 
         Runnable send = () -> {
             String input = userInput.getText();
