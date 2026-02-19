@@ -9,10 +9,13 @@ public class Ella {
     private final TaskList tasks;
     private final Ui ui;
 
+    // If loading fails (corrupt file, invalid format, etc.), we store a warning message.
+    private String startupWarning;
+
     /**
      * Creates an Ella instance using the given file path for persistent storage.
      *
-     * @param filePath Relative path to the save file (e.g., "data/duke.txt").
+     * @param filePath Relative path to the save file (e.g., "data/ella.txt").
      */
     public Ella(String filePath) {
         ui = new Ui();
@@ -26,8 +29,12 @@ public class Ella {
                 }
                 loaded.add(Task.fromStorageString(line));
             }
+            startupWarning = null;
         } catch (Exception e) {
+            // Console warning (for CLI users)
             ui.showLoadingError();
+            // GUI-friendly warning (for GUI users)
+            startupWarning = "Warning: I couldn't load your saved tasks. Starting fresh.";
         }
         tasks = loaded;
     }
@@ -37,6 +44,10 @@ public class Ella {
      */
     public void run() {
         ui.showWelcome();
+
+        if (startupWarning != null) {
+            ui.showBox(startupWarning);
+        }
 
         while (true) {
             String input = ui.readCommand();
@@ -77,11 +88,20 @@ public class Ella {
     }
 
     /**
-     * Launches the application.
+     * Returns a startup warning if loading saved data failed, otherwise null.
+     *
+     * @return warning message or null.
+     */
+    public String getStartupWarning() {
+        return startupWarning;
+    }
+
+    /**
+     * Launches the application (CLI).
      *
      * @param args Command line arguments (unused).
      */
     public static void main(String[] args) {
-        new Ella("data/duke.txt").run();
+        new Ella(Storage.DEFAULT_SAVE_PATH).run();
     }
 }

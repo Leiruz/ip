@@ -11,13 +11,15 @@ import java.util.List;
  * Handles reading and writing task data to a file on disk.
  */
 public class Storage {
+    public static final String DEFAULT_SAVE_PATH = "data/ella.txt";
+
     private final Path path;
 
     /**
-     * Creates a storage component that saves to "data/duke.txt".
+     * Creates a storage component that saves to the default file.
      */
     public Storage() {
-        this.path = Paths.get("data", "duke.txt");
+        this.path = Paths.get(DEFAULT_SAVE_PATH);
     }
 
     /**
