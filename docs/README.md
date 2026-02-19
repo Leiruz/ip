@@ -11,10 +11,10 @@ Ella is a lightweight task manager chatbot with a GUI.
 ## Features
 
 ### Add a todo
-Format: 	odo DESCRIPTION
+Format: 	Todo DESCRIPTION
 
 Example:
-- 	odo read CS2103T notes
+- 	Todo read CS2103T notes
 
 ### Add a deadline
 Format: deadline DESCRIPTION /by DATE
