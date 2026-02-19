@@ -1,30 +1,62 @@
-# Duke User Guide
+﻿# Ella User Guide
 
-// Update the title above to match the actual product name
+Ella is a lightweight task manager chatbot with a GUI.
 
-// Product screenshot goes here
+![Ui](Ui.png)
 
-// Product intro goes here
+## Quick start
+1. Run the app.
+2. Type commands in the input box and press **Enter** (or click **Send**).
 
-## Adding deadlines
+## Features
 
-// Describe the action and its outcome.
+### Add a todo
+Format: 	odo DESCRIPTION
 
-// Give examples of usage
+Example:
+- 	odo read CS2103T notes
 
-Example: `keyword (optional arguments)`
+### Add a deadline
+Format: deadline DESCRIPTION /by DATE
 
-// A description of the expected outcome goes here
+Example:
+- deadline submit iP /by 2026-02-20
 
-```
-expected output
-```
+### Add an event
+Format: event DESCRIPTION /from START /to END
 
-## Feature ABC
+Example:
+- event project meeting /from 2026-02-19 1400 /to 2026-02-19 1600
 
-// Feature details
+### List tasks
+Format: list
 
+### Mark / unmark task
+Format:
+- mark INDEX
+- unmark INDEX
 
-## Feature XYZ
+Example:
+- mark 1
 
-// Feature details
+### Delete task
+Format: delete INDEX
+
+Example:
+- delete 2
+
+### Find tasks
+Format: ind KEYWORD
+
+Example:
+- ind meeting
+
+### Sort tasks
+Format: sort
+
+### Exit
+Format: ye
+
+## Error handling
+- Ella shows friendly error messages for unknown commands, missing arguments, and invalid task numbers.
+- If the save file is missing, Ella starts with an empty task list and continues normally.
