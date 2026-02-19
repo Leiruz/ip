@@ -1,42 +1,44 @@
 package ella;
 
+import java.io.InputStream;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+/**
+ * JavaFX GUI for Ella.
+ * User messages appear on the right, Ella's messages appear on the left.
+ */
 public class Main extends Application {
 
     private static final String APP_TITLE = "Ella";
-    private static final String WELCOME_MESSAGE = "Hello! I'm Ella\nWhat can I do for you?";
+    private static final String SAVE_PATH = "data/ella.txt";
 
     private Ella ella;
 
     @Override
     public void start(Stage stage) {
-        // Initialize app core (loads tasks from storage)
-        ella = new Ella(Storage.DEFAULT_SAVE_PATH);
+        ella = new Ella(SAVE_PATH);
 
-        VBox dialogContainer = new VBox(10);
+        VBox dialogContainer = new VBox(8);
         dialogContainer.setPadding(new Insets(10));
-        dialogContainer.setFillWidth(true);
 
         ScrollPane scrollPane = new ScrollPane(dialogContainer);
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        // Auto-scroll to bottom when new messages arrive
+        // Auto-scroll to bottom when new messages appear
         dialogContainer.heightProperty().addListener((obs, oldVal, newVal) -> scrollPane.setVvalue(1.0));
 
         TextField userInput = new TextField();
@@ -44,105 +46,80 @@ public class Main extends Application {
         Button sendButton = new Button("Send");
         sendButton.setDefaultButton(true);
 
-        HBox inputBox = new HBox(10, userInput, sendButton);
-        inputBox.setPadding(new Insets(10, 0, 0, 0));
+        HBox inputBox = new HBox(8, userInput, sendButton);
         HBox.setHgrow(userInput, Priority.ALWAYS);
 
         VBox root = new VBox(10, scrollPane, inputBox);
         root.setPadding(new Insets(10));
 
-        addDialog(dialogContainer, "Ella", WELCOME_MESSAGE, false);
-
-        // Show startup warning in GUI if needed
+        // Startup warnings (e.g., storage issues)
         String warning = ella.getStartupWarning();
         if (warning != null && !warning.isBlank()) {
-            addDialog(dialogContainer, "Ella", warning, false);
+            dialogContainer.getChildren().add(DialogBox.ella("⚠️ " + warning));
         }
+
+        // Initial welcome bubble
+        dialogContainer.getChildren().add(DialogBox.ella("✨ Hey! I'm Ella.\nWhat can I do for you?"));
 
         Runnable send = () -> {
             String input = userInput.getText();
             if (input == null) {
                 return;
             }
+
             input = input.trim();
             if (input.isEmpty()) {
+                userInput.clear();
                 return;
             }
 
-            addDialog(dialogContainer, "You", input, true);
+            // User bubble
+            dialogContainer.getChildren().add(DialogBox.user(input));
 
+            String response;
             try {
-                String response = Parser.handle(input, ella.getTasks(), ella.getStorage());
-                if (response != null && !response.isEmpty()) {
-                    addDialog(dialogContainer, "Ella", response, false);
-                }
-
-                if (input.equalsIgnoreCase("bye")) {
-                    Platform.exit();
-                }
+                response = Parser.handle(input, ella.getTasks(), ella.getStorage());
             } catch (EllaException e) {
-                addDialog(dialogContainer, "Ella", "Oops! " + e.getMessage(), false);
+                response = "Oops! " + e.getMessage();
+            } catch (Exception e) {
+                // Safety net: prevents GUI from crashing on unexpected errors.
+                response = "Something went wrong on my side. Please try again.";
+            }
+
+            if (response != null && !response.isEmpty()) {
+                dialogContainer.getChildren().add(DialogBox.ella(response));
             }
 
             userInput.clear();
+
+            if (input.equalsIgnoreCase("bye")) {
+                // Disable further input, then close the app.
+                userInput.setDisable(true);
+                sendButton.setDisable(true);
+                Platform.exit();
+            }
         };
 
         sendButton.setOnAction(e -> send.run());
         userInput.setOnAction(e -> send.run());
 
         stage.setTitle(APP_TITLE);
+
+        // Use ella.png as the app/window icon
+        Image icon = loadIcon("/images/ella.png");
+        if (icon != null) {
+            stage.getIcons().add(icon);
+        }
+
         stage.setScene(new Scene(root, 520, 640));
         stage.show();
     }
 
-    /**
-     * Adds a single message row to the dialog container.
-     * - User messages appear on the right.
-     * - Ella messages appear on the left.
-     * Uses a simple "bubble" style for readability.
-     */
-    private void addDialog(VBox container, String speaker, String text, boolean isUser) {
-        Label bubble = new Label(text);
-        bubble.setWrapText(true);
-        bubble.setPadding(new Insets(10));
-        bubble.setMaxWidth(360);
-
-        // Simple bubble styling (no external CSS needed)
-        if (isUser) {
-            bubble.setStyle(
-                    "-fx-background-color: #dbeafe;"
-                            + "-fx-background-radius: 12;"
-                            + "-fx-border-radius: 12;"
-                            + "-fx-border-color: #93c5fd;"
-                            + "-fx-font-size: 13px;"
-            );
-        } else {
-            bubble.setStyle(
-                    "-fx-background-color: #f3f4f6;"
-                            + "-fx-background-radius: 12;"
-                            + "-fx-border-radius: 12;"
-                            + "-fx-border-color: #d1d5db;"
-                            + "-fx-font-size: 13px;"
-            );
+    private Image loadIcon(String resourcePath) {
+        try (InputStream is = Main.class.getResourceAsStream(resourcePath)) {
+            return (is == null) ? null : new Image(is);
+        } catch (Exception e) {
+            return null;
         }
-
-        Label nameTag = new Label(speaker);
-        nameTag.setStyle("-fx-font-size: 10px; -fx-text-fill: #6b7280;");
-        VBox messageBlock = new VBox(2, nameTag, bubble);
-
-        HBox row = new HBox(10);
-        row.setPadding(new Insets(2, 0, 2, 0));
-        row.setAlignment(isUser ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        if (isUser) {
-            row.getChildren().addAll(spacer, messageBlock);
-        } else {
-            row.getChildren().addAll(messageBlock, spacer);
-        }
-
-        container.getChildren().add(row);
     }
 }
