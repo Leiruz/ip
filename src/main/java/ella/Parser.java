@@ -1,5 +1,8 @@
 package ella;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Parses user input and executes the corresponding operations on the task list.
  * Returns user-facing messages that should be shown by the UI.
@@ -21,6 +24,22 @@ public class Parser {
                     + "• delete <num>\n"
                     + "• bye";
 
+    private static final String USAGE_FIND = "Use: find <keyword>  (e.g., find report)";
+    private static final String USAGE_MARK = "Use: mark <number>  (e.g., mark 2)";
+    private static final String USAGE_UNMARK = "Use: unmark <number>  (e.g., unmark 2)";
+    private static final String USAGE_DELETE = "Use: delete <number>  (e.g., delete 3)";
+    private static final String USAGE_TODO = "Use: todo <description>  (e.g., todo read book)";
+    private static final String USAGE_DEADLINE =
+            "Use: deadline <desc> /by <date>\nExample: deadline submit report /by 2019-10-15";
+    private static final String USAGE_EVENT =
+            "Use: event <desc> /from <start> /to <end>\nExample: event project meeting /from Mon 2pm /to Mon 4pm";
+
+    // Flexible delimiter patterns (case-insensitive, variable spacing)
+    private static final Pattern DEADLINE_PATTERN =
+            Pattern.compile("(?i)^(.*)\\s+/by\\s+(.*)$");
+    private static final Pattern EVENT_PATTERN =
+            Pattern.compile("(?i)^(.*)\\s+/from\\s+(.*)\\s+/to\\s+(.*)$");
+
     /**
      * Handles a single user command.
      *
@@ -36,114 +55,132 @@ public class Parser {
         }
 
         String trimmed = input.trim();
+        CommandParts parts = splitCommand(trimmed);
 
-        if (trimmed.equalsIgnoreCase("bye")) {
+        switch (parts.command) {
+        case "bye":
             return "👋 Bye! I’ll be here when you’re ready to be productive again.";
-        }
-
-        if (trimmed.equalsIgnoreCase("list")) {
+        case "list":
             return listTasks(taskList);
+        case "find":
+            return handleFind(taskList, parts.args);
+        case "delete":
+            return handleDelete(taskList, storage, parts.args);
+        case "mark":
+            return handleMark(taskList, storage, parts.args);
+        case "unmark":
+            return handleUnmark(taskList, storage, parts.args);
+        case "todo":
+            return handleTodo(taskList, storage, parts.args);
+        case "deadline":
+            return handleDeadline(taskList, storage, parts.args);
+        case "event":
+            return handleEvent(taskList, storage, parts.args);
+        default:
+            throw new EllaException(MESSAGE_UNKNOWN_COMMAND);
+        }
+    }
+
+    private static CommandParts splitCommand(String trimmedInput) {
+        String[] tokens = trimmedInput.split("\\s+", 2);
+        String cmd = tokens[0].toLowerCase();
+        String args = tokens.length == 2 ? tokens[1].trim() : "";
+        return new CommandParts(cmd, args);
+    }
+
+    private static String handleFind(TaskList taskList, String args) throws EllaException {
+        if (args.isEmpty()) {
+            throw new EllaException(USAGE_FIND);
+        }
+        return findTasks(taskList, args);
+    }
+
+    private static String handleDelete(TaskList taskList, Storage storage, String args) throws EllaException {
+        int idx = parseStrictOneBasedIndex(args, USAGE_DELETE);
+        Task removed = removeTaskAt(taskList, idx);
+        save(storage, taskList);
+        return "🧹 Poof! Removed this task:\n"
+                + "  " + removed + "\n"
+                + "Now you have " + taskList.size() + " tasks left.";
+    }
+
+    private static String handleMark(TaskList taskList, Storage storage, String args) throws EllaException {
+        int idx = parseStrictOneBasedIndex(args, USAGE_MARK);
+        Task t = taskAt(taskList, idx);
+        t.markDone();
+        save(storage, taskList);
+        return "✅ Nice. Marked as done:\n  " + t;
+    }
+
+    private static String handleUnmark(TaskList taskList, Storage storage, String args) throws EllaException {
+        int idx = parseStrictOneBasedIndex(args, USAGE_UNMARK);
+        Task t = taskAt(taskList, idx);
+        t.markNotDone();
+        save(storage, taskList);
+        return "↩️ Alright, back to “in progress”:\n  " + t;
+    }
+
+    private static String handleTodo(TaskList taskList, Storage storage, String args) throws EllaException {
+        if (args.isEmpty()) {
+            throw new EllaException("A todo needs a description 😅\n" + USAGE_TODO);
+        }
+        Task t = new Todo(args);
+        taskList.add(t);
+        save(storage, taskList);
+        return buildAddResponse(taskList, t);
+    }
+
+    private static String handleDeadline(TaskList taskList, Storage storage, String args) throws EllaException {
+        if (args.isEmpty()) {
+            throw new EllaException(USAGE_DEADLINE);
         }
 
-        String lower = trimmed.toLowerCase();
-
-        if (lower.startsWith("find")) {
-            String keyword = trimmed.substring(4).trim();
-            if (keyword.isEmpty()) {
-                throw new EllaException("Use: find <keyword>  (e.g., find report)");
-            }
-            return findTasks(taskList, keyword);
+        Matcher m = DEADLINE_PATTERN.matcher(args);
+        if (!m.matches()) {
+            throw new EllaException("Deadline needs `/by` 😅\n" + USAGE_DEADLINE);
         }
 
-        if (lower.startsWith("delete")) {
-            int idx = parseTaskNumber(trimmed, "delete");
-            Task removed = removeTaskAt(taskList, idx);
-            save(storage, taskList);
-            return "🧹 Poof! Removed this task:\n"
-                    + "  " + removed + "\n"
-                    + "Now you have " + taskList.size() + " tasks left.";
+        String desc = m.group(1).trim();
+        String by = m.group(2).trim();
+
+        if (desc.isEmpty()) {
+            throw new EllaException("A deadline needs a description 😅\n" + USAGE_DEADLINE);
+        }
+        if (by.isEmpty()) {
+            throw new EllaException("A deadline needs a /by date 😅\n" + USAGE_DEADLINE);
         }
 
-        if (lower.startsWith("mark")) {
-            int idx = parseTaskNumber(trimmed, "mark");
-            Task t = taskAt(taskList, idx);
-            t.markDone();
-            save(storage, taskList);
-            return "✅ Nice. Marked as done:\n  " + t;
+        Task t = new Deadline(desc, by);
+        taskList.add(t);
+        save(storage, taskList);
+        return buildAddResponse(taskList, t);
+    }
+
+    private static String handleEvent(TaskList taskList, Storage storage, String args) throws EllaException {
+        if (args.isEmpty()) {
+            throw new EllaException(USAGE_EVENT);
         }
 
-        if (lower.startsWith("unmark")) {
-            int idx = parseTaskNumber(trimmed, "unmark");
-            Task t = taskAt(taskList, idx);
-            t.markNotDone();
-            save(storage, taskList);
-            return "↩️ Alright, back to “in progress”:\n  " + t;
+        Matcher m = EVENT_PATTERN.matcher(args);
+        if (!m.matches()) {
+            throw new EllaException("Event needs `/from` and `/to` 😅\n" + USAGE_EVENT);
         }
 
-        if (lower.startsWith("todo")) {
-            String desc = trimmed.substring(4).trim();
-            if (desc.isEmpty()) {
-                throw new EllaException("A todo needs a description 😅\nUse: todo <description>");
-            }
-            Task t = new Todo(desc);
-            taskList.add(t);
-            save(storage, taskList);
-            return buildAddResponse(taskList, t);
+        String desc = m.group(1).trim();
+        String from = m.group(2).trim();
+        String to = m.group(3).trim();
+
+        if (desc.isEmpty()) {
+            throw new EllaException("An event needs a description 😅\n" + USAGE_EVENT);
+        }
+        if (from.isEmpty() || to.isEmpty()) {
+            throw new EllaException("Event /from and /to values cannot be empty 😅\n" + USAGE_EVENT);
         }
 
-        if (lower.startsWith("deadline")) {
-            String rest = trimmed.substring("deadline".length()).trim();
-            String[] parts = rest.split(" /by ", 2);
-            if (parts.length < 2) {
-                throw new EllaException("Use: deadline <desc> /by <date>\n"
-                        + "Example: deadline submit report /by 2019-10-15");
-            }
-
-            String desc = parts[0].trim();
-            String by = parts[1].trim();
-
-            if (desc.isEmpty()) {
-                throw new EllaException("A deadline needs a description 😅");
-            }
-            if (by.isEmpty()) {
-                throw new EllaException("A deadline needs a /by date 😅");
-            }
-
-            Task t = new Deadline(desc, by);
-            taskList.add(t);
-            save(storage, taskList);
-            return buildAddResponse(taskList, t);
-        }
-
-        if (lower.startsWith("event")) {
-            String rest = trimmed.substring("event".length()).trim();
-
-            int fromIdx = rest.toLowerCase().indexOf(" /from ");
-            int toIdx = rest.toLowerCase().indexOf(" /to ");
-
-            if (fromIdx == -1 || toIdx == -1 || toIdx < fromIdx) {
-                throw new EllaException("Event needs /from and /to 😅\n"
-                        + "Use: event <desc> /from <start> /to <end>");
-            }
-
-            String desc = rest.substring(0, fromIdx).trim();
-            String from = rest.substring(fromIdx + " /from ".length(), toIdx).trim();
-            String to = rest.substring(toIdx + " /to ".length()).trim();
-
-            if (desc.isEmpty()) {
-                throw new EllaException("An event needs a description 😅");
-            }
-            if (from.isEmpty() || to.isEmpty()) {
-                throw new EllaException("Event /from and /to values cannot be empty 😅");
-            }
-
-            Task t = new Event(desc, from, to);
-            taskList.add(t);
-            save(storage, taskList);
-            return buildAddResponse(taskList, t);
-        }
-
-        throw new EllaException(MESSAGE_UNKNOWN_COMMAND);
+        Task t = new Event(desc, from, to);
+        taskList.add(t);
+        save(storage, taskList);
+        return buildAddResponse(taskList, t);
     }
 
     private static String buildAddResponse(TaskList taskList, Task t) {
@@ -152,12 +189,6 @@ public class Parser {
                 + "Now you have " + taskList.size() + " tasks in the list.";
     }
 
-    /**
-     * Builds the listing string for all tasks.
-     *
-     * @param taskList The task list to display.
-     * @return Formatted list output.
-     */
     private static String listTasks(TaskList taskList) {
         if (taskList.size() == 0) {
             return "📭 Your list is empty for now.\nAdd one with `todo ...`, `deadline ...`, or `event ...`.";
@@ -165,18 +196,11 @@ public class Parser {
         StringBuilder sb = new StringBuilder();
         sb.append("📋 Here’s what you’ve got:\n");
         for (int i = 0; i < taskList.size(); i++) {
-            sb.append(i + 1).append(".").append(taskList.get(i)).append("\n");
+            sb.append(i + 1).append(". ").append(taskList.get(i)).append("\n");
         }
         return sb.toString().trim();
     }
 
-    /**
-     * Finds tasks whose displayed text contains the given keyword (case-insensitive).
-     *
-     * @param taskList The task list to search.
-     * @param keyword The keyword to search for.
-     * @return Formatted search results.
-     */
     private static String findTasks(TaskList taskList, String keyword) {
         String keyLower = keyword.toLowerCase();
 
@@ -188,7 +212,8 @@ public class Parser {
             Task t = taskList.get(i);
             if (t.toString().toLowerCase().contains(keyLower)) {
                 matchCount++;
-                sb.append(matchCount).append(".").append(t).append("\n");
+                // show original index so user can mark/delete easily
+                sb.append(matchCount).append(". (").append(i + 1).append(") ").append(t).append("\n");
             }
         }
 
@@ -200,33 +225,20 @@ public class Parser {
     }
 
     /**
-     * Parses a one-based task number from a command like "mark 2".
-     *
-     * @param input Full input string.
-     * @param command Command keyword (e.g., "mark").
-     * @return One-based index the user provided.
-     * @throws EllaException If the number is missing or invalid.
+     * Parses a strict one-based index.
+     * Rejects empty strings, non-numbers, and extra tokens (e.g., "2 abc").
      */
-    private static int parseTaskNumber(String input, String command) throws EllaException {
-        String rest = input.substring(command.length()).trim();
-        if (rest.isEmpty()) {
-            throw new EllaException("Please provide a task number.\nUse: " + command + " <number>");
+    private static int parseStrictOneBasedIndex(String args, String usage) throws EllaException {
+        String trimmed = args == null ? "" : args.trim();
+        if (trimmed.isEmpty()) {
+            throw new EllaException("Please provide a task number.\n" + usage);
         }
-        try {
-            return Integer.parseInt(rest);
-        } catch (NumberFormatException e) {
-            throw new EllaException("That doesn’t look like a valid task number 😅\nUse: " + command + " <number>");
+        if (!trimmed.matches("\\d+")) {
+            throw new EllaException("That doesn’t look like a valid task number 😅\n" + usage);
         }
+        return Integer.parseInt(trimmed);
     }
 
-    /**
-     * Gets a task by one-based index with range checking.
-     *
-     * @param list The task list.
-     * @param oneBasedIndex The one-based task index.
-     * @return The task at that index.
-     * @throws EllaException If out of range or list empty.
-     */
     private static Task taskAt(TaskList list, int oneBasedIndex) throws EllaException {
         if (list.size() == 0) {
             throw new EllaException("There are no tasks yet.\nAdd one first (e.g., todo <description>).");
@@ -237,14 +249,6 @@ public class Parser {
         return list.get(oneBasedIndex - 1);
     }
 
-    /**
-     * Removes a task by one-based index with range checking.
-     *
-     * @param list The task list.
-     * @param oneBasedIndex The one-based task index.
-     * @return The removed task.
-     * @throws EllaException If out of range or list empty.
-     */
     private static Task removeTaskAt(TaskList list, int oneBasedIndex) throws EllaException {
         if (list.size() == 0) {
             throw new EllaException("There are no tasks to delete yet.");
@@ -255,18 +259,21 @@ public class Parser {
         return list.remove(oneBasedIndex - 1);
     }
 
-    /**
-     * Persists the current task list to disk.
-     *
-     * @param storage Storage component.
-     * @param taskList Task list to save.
-     * @throws EllaException If saving fails.
-     */
     private static void save(Storage storage, TaskList taskList) throws EllaException {
         try {
             storage.saveLines(taskList.toStorageLines());
         } catch (Exception e) {
             throw new EllaException("I couldn’t save your tasks to disk 😭");
+        }
+    }
+
+    private static class CommandParts {
+        private final String command;
+        private final String args;
+
+        private CommandParts(String command, String args) {
+            this.command = command;
+            this.args = args;
         }
     }
 }
