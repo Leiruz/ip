@@ -55,7 +55,7 @@ application {
 }
 
 shadowJar {
-    archiveBaseName = "duke"
+    archiveBaseName = "ella"
     archiveClassifier = null
 }
 

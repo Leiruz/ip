@@ -9,7 +9,6 @@ public class Ella {
     private final TaskList tasks;
     private final Ui ui;
 
-    // If loading fails (corrupt file, invalid format, etc.), we store a warning message.
     private String startupWarning;
 
     /**
@@ -31,10 +30,8 @@ public class Ella {
             }
             startupWarning = null;
         } catch (Exception e) {
-            // Console warning (for CLI users)
             ui.showLoadingError();
-            // GUI-friendly warning (for GUI users)
-            startupWarning = "Warning: I couldn't load your saved tasks. Starting fresh.";
+            startupWarning = "Warning: Could not load saved tasks. Starting fresh.";
         }
         tasks = loaded;
     }
@@ -65,33 +62,20 @@ public class Ella {
                 }
             } catch (EllaException e) {
                 ui.showError(e.getMessage());
+            } catch (Exception e) {
+                ui.showError("Something went wrong. Please try again.");
             }
         }
     }
 
-    /**
-     * Returns the list of tasks.
-     *
-     * @return TaskList object containing the tasks.
-     */
     public TaskList getTasks() {
         return tasks;
     }
 
-    /**
-     * Returns the storage object.
-     *
-     * @return Storage object used for loading and saving tasks.
-     */
     public Storage getStorage() {
         return storage;
     }
 
-    /**
-     * Returns a startup warning if loading saved data failed, otherwise null.
-     *
-     * @return warning message or null.
-     */
     public String getStartupWarning() {
         return startupWarning;
     }
