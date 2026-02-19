@@ -2,7 +2,8 @@
 
 Ella is a lightweight task manager chatbot with a GUI.
 
-![Ui](Ui.png)
+![UI](docs/images/Ui.png)
+
 
 ## Quick start
 1. Run the app.
